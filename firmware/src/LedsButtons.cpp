@@ -39,7 +39,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "app_scheduler.h"
 #include "blueio_board.h"
-#include "BlueIOCtrl.h"
 #include "LedsButtons.h"
 #include "coredev/timer.h"
 #include "UartBle.h"

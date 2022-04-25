@@ -32,11 +32,6 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>src/BlueIOCtrl.h</name>
-			<type>1</type>
-			<locationURI>PARENT-3-PROJECT_LOC/src/BlueIOCtrl.h</locationURI>
-		</link>
-		<link>
 			<name>src/LedsButtons.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-3-PROJECT_LOC/src/LedsButtons.cpp</locationURI>

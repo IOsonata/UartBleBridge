@@ -39,7 +39,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "app_scheduler.h"
 #include "blueio_board.h"
-#include "BlueIOCtrl.h"
 #include "iopinctrl.h"
 #include "coredev/iopincfg.h"
 #include "coredev/uart.h"

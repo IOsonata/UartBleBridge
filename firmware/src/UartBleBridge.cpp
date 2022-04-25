@@ -50,7 +50,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "nrf_sdh.h"
 
 #include "board.h"
-#include "BlueIOCtrl.h"
 //#include "coredev/timer.h"
 #include "idelay.h"
 #include "UartBle.h"
