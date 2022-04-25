@@ -68,7 +68,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /// BlueIO breakout board
 
 #define DEVICE_NAME     "UartBleBridge"				/**< Name of device. Will be included in the advertising data. */
-#define MODEL_NAME      "BlystNano"               	/**< Model number. Will be passed to Device Information Service. */
+#define MODEL_NAME      "Blyst840"               	/**< Model number. Will be passed to Device Information Service. */
 
 
 // LEDs
