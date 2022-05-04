@@ -173,6 +173,12 @@ const BLEAPP_DEVDESC s_UartBleDevDesc = {
 	"1.0",						// Hardware version string
 };
 
+//BLE_UUID_TYPE_BLE
+const ble_uuid_t s_UartBleSrvAdvUuid = {
+	.uuid = BLE_UART_UUID_SERVICE,
+	.type = BLE_UUID_TYPE_BLE,
+};
+
 /* BlueIO BLE App configuration */
 const BleAppCfg_t s_BleAppCfg = {
 	.ClkCfg = { NRF_CLOCK_LF_SRC_XTAL, 0, 0, NRF_CLOCK_LF_ACCURACY_20_PPM},
@@ -189,10 +195,10 @@ const BleAppCfg_t s_BleAppCfg = {
 	.AdvManDataLen = sizeof(g_ManData),		// Length of manufacture specific data
 	.pSrManData = NULL,
 	.SrManDataLen = 0,
-	.SecType = BLEAPP_SECTYPE_STATICKEY_MITM,			//BLEAPP_SECTYPE_STATICKEY_MITM,//BLEAPP_SECTYPE_NONE,    // Secure connection type
+	.SecType = BLEAPP_SECTYPE_NONE,//BLEAPP_SECTYPE_STATICKEY_MITM,			//BLEAPP_SECTYPE_STATICKEY_MITM,//BLEAPP_SECTYPE_NONE,    // Secure connection type
 	.SecExchg = BLEAPP_SECEXCHG_NONE,		// Security key exchange
-	.pAdvUuids = NULL,      				// Service uuids to advertise
-	.NbAdvUuid = 0, 						// Total number of uuids
+	.pAdvUuids = &s_UartBleSrvAdvUuid, //NULL,      				// Service uuids to advertise
+	.NbAdvUuid = 1, 						// Total number of uuids
 	.AdvInterval = APP_ADV_INTERVAL,		// Advertising interval in msec
 	.AdvTimeout = APP_ADV_TIMEOUT,			// Advertising timeout in sec
 	.AdvSlowInterval = 0,					// Slow advertising interval, if > 0, fallback to
@@ -308,11 +314,11 @@ void HardwareInit()
  */
 void BleAppInitUserData()
 {
-	// Add passkey pairing
-    ble_opt_t opt;
-    opt.gap_opt.passkey.p_passkey = (uint8_t*)"123456";
-    uint32_t err_code =  sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt);
-    APP_ERROR_CHECK(err_code);
+//	// Add passkey pairing
+//    ble_opt_t opt;
+//    opt.gap_opt.passkey.p_passkey = (uint8_t*)"123456";
+//    uint32_t err_code =  sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt);
+//    APP_ERROR_CHECK(err_code);
 
 }
 
