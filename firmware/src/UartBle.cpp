@@ -53,6 +53,7 @@ extern Timer g_Timer2;
 extern BleIntrf g_BleIntrf;
 extern volatile int g_UartRxBuffLen;
 
+volatile uint8_t g_TimeoutCnt = MAX_COUNT;
 
 /// UART Tx BLE Service callback function
 void UartTxSrvcCallback(BLESRVC *pBlueIOSvc, uint8_t *pData, int Offset, int Len)
@@ -182,22 +183,35 @@ void UartRxSchedHandler(void * p_event_data, uint16_t event_size)
 
 	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);//LED2_GREEN
 
-	g_Timer2.DisableTimerTrigger(0);
+	//g_Timer2.DisableTimerTrigger(0);
 
 	int l = g_Uart.Rx(&g_UartRxBuff[g_UartRxBuffLen], PACKET_SIZE - g_UartRxBuffLen);
-	//g_Uart.printf("l = %d | g_UartRxBuffLen = %d \r\n", l, g_UartRxBuffLen);
+
 	if (l > 0)
 	{
 		g_UartRxBuffLen += l;
+		g_TimeoutCnt = MAX_COUNT;
+
 		if (g_UartRxBuffLen >= PACKET_SIZE)
 		{
 			flush = true;
-			//g_Uart.printf("#1: l = %d | g_UartRxBuffLen = %d | flush = TRUE\r\n", l, g_UartRxBuffLen);
+
 		}
 		else
 		{
-			//g_Uart.printf("#2: l = %d | g_UartRxBuffLen = %d | flush = FALSE\r\n", l, g_UartRxBuffLen);
-			g_Timer2.EnableTimerTrigger(0, 250UL, TIMER_TRIG_TYPE_SINGLE);
+			//g_Timer2.EnableTimerTrigger(0, 500UL, TIMER_TRIG_TYPE_SINGLE);
+//			if (g_TimeoutCnt == 0)
+//			{
+//				g_BleIntrf.Tx(0, g_UartRxBuff, g_UartRxBuffLen);
+//				//g_Uart.printf("Target board: ");
+//				g_Uart.Tx(g_UartRxBuff, g_UartRxBuffLen);
+//				//g_Uart.printf("\r\n");
+//				g_UartRxBuffLen = 0;
+//
+//				g_TimeoutCnt = MAX_COUNT;
+//				app_sched_event_put(NULL, 0, UartRxSchedHandler);
+//			}
+
 		}
 	}
 	else
@@ -213,6 +227,7 @@ void UartRxSchedHandler(void * p_event_data, uint16_t event_size)
 		//g_Uart.printf("Buffer is full ==> Flush it!\r\n");
 
 		g_BleIntrf.Tx(0, g_UartRxBuff, g_UartRxBuffLen);
+		g_Uart.Tx(g_UartRxBuff, g_UartRxBuffLen);
 		g_UartRxBuffLen = 0;
 
 

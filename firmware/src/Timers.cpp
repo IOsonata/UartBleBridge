@@ -52,6 +52,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "board.h"
 
 Timer g_Timer2;
+extern volatile uint8_t g_TimeoutCnt;
 
 extern UART g_Uart;
 extern BleIntrf g_BleIntrf;
@@ -64,7 +65,7 @@ void TestTimerTriggers()
 {
 
 	/* Timer trigger #0 */
-	uint64_t period = g_Timer2.EnableTimerTrigger(0, 500UL, TIMER_TRIG_TYPE_SINGLE);
+	uint64_t period = g_Timer2.EnableTimerTrigger(0, 100UL, TIMER_TRIG_TYPE_CONTINUOUS);
 	if (period == 0)
 	{
 		g_Uart.printf("Timer trigger #0 failed\r\n");
@@ -72,7 +73,7 @@ void TestTimerTriggers()
 	else
 	{
 		g_Uart.printf("Timer trigger #0 with period = %d ms: Test OK!\r\n", period);
-		g_Timer2.DisableTimerTrigger(0);
+		//g_Timer2.DisableTimerTrigger(0);
 	}
 
 	/* Timer trigger #1 */
@@ -101,17 +102,20 @@ void Timer2Handler(TimerDev_t *pTimer, uint32_t Evt)
     	//IOPinToggle(s_Leds[2].PortNo, s_Leds[2].PinNo);//LED2_RED
     	//IOPinToggle(s_Leds[3].PortNo, s_Leds[3].PinNo);//LED2_BLUE
 
-    	//g_Uart.printf("Time out! Flush the UART Rx buffer\r\n");
-    	g_BleIntrf.Tx(0, g_UartRxBuff, g_UartRxBuffLen);
-    	g_Uart.printf("Target board: ");
-    	g_Uart.Tx(g_UartRxBuff, g_UartRxBuffLen);
-    	g_Uart.printf("\r\n");
-    	g_UartRxBuffLen = 0;
-//    	if (BleSrvcCharNotify(&g_UartBleSrvc, 0, g_UartRxBuff, g_UartRxBuffLen) == 0)
-//		{
-//			g_UartRxBuffLen = 0;
-//		}
-		app_sched_event_put(NULL, 0, UartRxSchedHandler);
+    	g_TimeoutCnt--;
+
+		if (g_TimeoutCnt == 0)
+		{
+			g_BleIntrf.Tx(0, g_UartRxBuff, g_UartRxBuffLen);
+			//g_Uart.printf("Target board: ");
+			g_Uart.Tx(g_UartRxBuff, g_UartRxBuffLen);
+			//g_Uart.printf("\r\n");
+			g_UartRxBuffLen = 0;
+
+			g_TimeoutCnt = MAX_COUNT;
+			app_sched_event_put(NULL, 0, UartRxSchedHandler);
+		}
+
 
     }
 

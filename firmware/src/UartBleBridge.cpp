@@ -82,7 +82,8 @@ alignas(4) static uint8_t s_BleIntrfTxFifo[BLEINTRF_FIFOSIZE];
  * UART object instance
  */
 extern UART g_Uart;
-volatile int g_UartRxBuffLen = 0;
+//volatile int g_UartRxBuffLen = 0;
+std::atomic<int> g_UartRxBuffLen(0);
 volatile bool g_bUartState = false;
 
 
@@ -153,7 +154,7 @@ static const BleIntrfCfg_t s_BleIntrfCfg = {
 	.RxCharIdx = BLESRV_WRITE_CHAR_IDX,
 	.TxCharIdx = BLESRV_READ_CHAR_IDX,
 	.PacketSize = BLEINTRF_PKTSIZE,			// Packet size : use default
-	.bBlocking = false,
+	.bBlocking = true,
 	.RxFifoMemSize = BLEINTRF_FIFOSIZE,			// Rx Fifo mem size
 	.pRxFifoMem = s_BleIntrfRxFifo,		// Rx Fifo mem pointer
 	.TxFifoMemSize = BLEINTRF_FIFOSIZE,			// Tx Fifo mem size
@@ -197,8 +198,8 @@ const BleAppCfg_t s_BleAppCfg = {
 	.SrManDataLen = 0,
 	.SecType = BLEAPP_SECTYPE_NONE,//BLEAPP_SECTYPE_STATICKEY_MITM,			//BLEAPP_SECTYPE_STATICKEY_MITM,//BLEAPP_SECTYPE_NONE,    // Secure connection type
 	.SecExchg = BLEAPP_SECEXCHG_NONE,		// Security key exchange
-	.pAdvUuids = &s_UartBleSrvAdvUuid, //NULL,      				// Service uuids to advertise
-	.NbAdvUuid = 1, 						// Total number of uuids
+	.pAdvUuids = NULL,//&s_UartBleSrvAdvUuid, //NULL,      				// Service uuids to advertise
+	.NbAdvUuid = 0, 						// Total number of uuids
 	.AdvInterval = APP_ADV_INTERVAL,		// Advertising interval in msec
 	.AdvTimeout = APP_ADV_TIMEOUT,			// Advertising timeout in sec
 	.AdvSlowInterval = 0,					// Slow advertising interval, if > 0, fallback to
@@ -234,6 +235,7 @@ UARTCfg_t g_UartCfg = {
 	.pRxMem = s_UartRxFifo,
 	.TxMemSize = UARTFIFOSIZE,
 	.pTxMem = s_UartTxFifo,
+	.bDMAMode = true,
 };
 
 
