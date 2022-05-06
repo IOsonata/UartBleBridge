@@ -155,7 +155,10 @@ int nRFUartEvtHandler(UARTDev_t *pDev, UART_EVT EvtId, uint8_t *pBuffer, int Buf
 	{
 		case UART_EVT_RXTIMEOUT:
 		case UART_EVT_RXDATA:
-			app_sched_event_put(NULL, 0, UartRxSchedHandler);
+			if (g_UartRxBuffLen <= 0)
+			{
+				app_sched_event_put(NULL, 0, UartRxSchedHandler);
+			}
 			break;
 		case UART_EVT_TXREADY:
 			break;
@@ -179,39 +182,21 @@ int nRFUartEvtHandler(UARTDev_t *pDev, UART_EVT EvtId, uint8_t *pBuffer, int Buf
 // TODO: Add timer to UartRxSchedHandler()
 void UartRxSchedHandler(void * p_event_data, uint16_t event_size)
 {
-	bool flush = false;
-
 	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);//LED2_GREEN
 
-	//g_Timer2.DisableTimerTrigger(0);
-
+	bool flush = false;
 	int l = g_Uart.Rx(&g_UartRxBuff[g_UartRxBuffLen], PACKET_SIZE - g_UartRxBuffLen);
+	g_Uart.Tx(&g_UartRxBuff[g_UartRxBuffLen], l);
+
+
+	int cnt = 0;
 
 	if (l > 0)
 	{
 		g_UartRxBuffLen += l;
-		g_TimeoutCnt = MAX_COUNT;
-
 		if (g_UartRxBuffLen >= PACKET_SIZE)
 		{
 			flush = true;
-
-		}
-		else
-		{
-			//g_Timer2.EnableTimerTrigger(0, 500UL, TIMER_TRIG_TYPE_SINGLE);
-//			if (g_TimeoutCnt == 0)
-//			{
-//				g_BleIntrf.Tx(0, g_UartRxBuff, g_UartRxBuffLen);
-//				//g_Uart.printf("Target board: ");
-//				g_Uart.Tx(g_UartRxBuff, g_UartRxBuffLen);
-//				//g_Uart.printf("\r\n");
-//				g_UartRxBuffLen = 0;
-//
-//				g_TimeoutCnt = MAX_COUNT;
-//				app_sched_event_put(NULL, 0, UartRxSchedHandler);
-//			}
-
 		}
 	}
 	else
@@ -219,25 +204,31 @@ void UartRxSchedHandler(void * p_event_data, uint16_t event_size)
 		if (g_UartRxBuffLen > 0)
 		{
 			flush = true;
-			//g_Uart.printf("#3: l = %d | g_UartRxBuffLen = %d | flush = true", l, g_UartRxBuffLen);
 		}
 	}
+
+	// Flush data via BLE Interface
 	if (flush)
 	{
-		//g_Uart.printf("Buffer is full ==> Flush it!\r\n");
+		cnt = g_BleIntrf.Tx(0, g_UartRxBuff, g_UartRxBuffLen);
+//		g_Uart.Tx(g_UartRxBuff, cnt);
 
-		g_BleIntrf.Tx(0, g_UartRxBuff, g_UartRxBuffLen);
-		g_Uart.Tx(g_UartRxBuff, g_UartRxBuffLen);
-		g_UartRxBuffLen = 0;
+		if (cnt < g_UartRxBuffLen)
+		{
+			// move the remaining data to the buffer's head
+			memcpy(&g_UartRxBuff[0], &g_UartRxBuff[cnt], g_UartRxBuffLen - cnt);
+			g_UartRxBuffLen -= cnt;
+		}
+		else
+		{
+			g_UartRxBuffLen = 0;
+		}
+	}
 
-
-//		if (BleSrvcCharNotify(&g_UartBleSrvc, 0, g_UartRxBuff, g_UartRxBuffLen) == 0)
-//		{
-//			g_UartRxBuffLen = 0;
-//		}
-
+	// Schedule the UartRxSchedHandler if g_UartRxBuff still has data
+	if (g_UartRxBuffLen > 0)
+	{
 		app_sched_event_put(NULL, 0, UartRxSchedHandler);
-
 	}
 
 	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);//LED2_GREEN

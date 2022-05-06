@@ -247,7 +247,7 @@ TimerCfg_t s_Timer2Cfg = {
     .DevNo = 2, // !!!: TIMER0 and TIMER1 are occupied by SoftDevice
 	.ClkSrc = TIMER_CLKSRC_DEFAULT,
 	.Freq = 0,			// 0 => Default frequency
-	.IntPrio = 7,
+	.IntPrio = APP_IRQ_PRIORITY_LOW,
 	.EvtHandler = Timer2Handler
 };
 

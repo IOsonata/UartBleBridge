@@ -63,18 +63,18 @@ extern uint8_t g_UartRxBuff[PACKET_SIZE];
 
 void TestTimerTriggers()
 {
-
+	uint64_t period;
 	/* Timer trigger #0 */
-	uint64_t period = g_Timer2.EnableTimerTrigger(0, 100UL, TIMER_TRIG_TYPE_CONTINUOUS);
-	if (period == 0)
-	{
-		g_Uart.printf("Timer trigger #0 failed\r\n");
-	}
-	else
-	{
-		g_Uart.printf("Timer trigger #0 with period = %d ms: Test OK!\r\n", period);
-		//g_Timer2.DisableTimerTrigger(0);
-	}
+//	uint64_t period = g_Timer2.EnableTimerTrigger(0, 100UL, TIMER_TRIG_TYPE_CONTINUOUS);
+//	if (period == 0)
+//	{
+//		g_Uart.printf("Timer trigger #0 failed\r\n");
+//	}
+//	else
+//	{
+//		g_Uart.printf("Timer trigger #0 with period = %d ms: Test OK!\r\n", period);
+//		//g_Timer2.DisableTimerTrigger(0);
+//	}
 
 	/* Timer trigger #1 */
 	period = g_Timer2.EnableTimerTrigger(1, 1500UL, TIMER_TRIG_TYPE_CONTINUOUS);
@@ -106,14 +106,22 @@ void Timer2Handler(TimerDev_t *pTimer, uint32_t Evt)
 
 		if (g_TimeoutCnt == 0)
 		{
-			g_BleIntrf.Tx(0, g_UartRxBuff, g_UartRxBuffLen);
-			//g_Uart.printf("Target board: ");
-			g_Uart.Tx(g_UartRxBuff, g_UartRxBuffLen);
-			//g_Uart.printf("\r\n");
-			g_UartRxBuffLen = 0;
+			int cnt = g_BleIntrf.Tx(0, g_UartRxBuff, g_UartRxBuffLen);
+			if (cnt == g_UartRxBuffLen)
+			{
+				//g_Uart.printf("Target board: ");
+				g_Uart.Tx(g_UartRxBuff, g_UartRxBuffLen);
+				//g_Uart.printf("\r\n");
+				g_UartRxBuffLen = 0;
+			}
+			else
+			{
+				g_UartRxBuffLen -= cnt;
+				app_sched_event_put(NULL, 0, UartRxSchedHandler);
+			}
 
 			g_TimeoutCnt = MAX_COUNT;
-			app_sched_event_put(NULL, 0, UartRxSchedHandler);
+
 		}
 
 
