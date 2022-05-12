@@ -206,8 +206,8 @@ const BleAppCfg_t s_BleAppCfg = {
 											// slow interval on adv timeout and advertise until connected
 	.ConnIntervalMin = MIN_CONN_INTERVAL,
 	.ConnIntervalMax = MAX_CONN_INTERVAL,
-	.ConnLedPort = BLUEIO_CONNECT_LED_PORT,		// Led port nuber
-	.ConnLedPin = BLUEIO_CONNECT_LED_PIN,		// Led pin number
+	.ConnLedPort = LED1_PORT,				// Led port nuber
+	.ConnLedPin = LED1_PIN,					// Led pin number
 	.TxPower = 0,							// Tx power
 	.SDEvtHandler = NULL,					// RTOS Softdevice handler
 	.MaxMtu = BLE_MTU_SIZE,
