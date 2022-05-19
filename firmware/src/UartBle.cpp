@@ -53,23 +53,36 @@ extern Timer g_Timer2;
 extern BleIntrf g_BleIntrf;
 extern volatile int g_UartRxBuffLen;
 
-volatile uint8_t g_TimeoutCnt = MAX_COUNT;
-
 /// UART Tx BLE Service callback function
 void UartTxSrvcCallback(BLESRVC *pBlueIOSvc, uint8_t *pData, int Offset, int Len)
 {
+#if defined(BLYST_NANO_IBK)
 	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);
+#elif defined(BLUEIO832MINI_BOARD)
+	IOPinToggle(LED1_PORT, LED1_PIN);
+#endif
+
 	g_Uart.printf("UART Tx callback: ");
 	g_Uart.Tx(pData, Len);
 	g_Uart.printf("\r\n");
+
+#if defined(BLYST_NANO_IBK)
 	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);
+#elif defined(BLUEIO832MINI_BOARD)
+	IOPinToggle(LED1_PORT, LED1_PIN);
+#endif
 }
 
 
 /// UART Configure BLE Service callback function
 void UartCfgSrvcCallback(BLESRVC *pBlueIOSvc, uint8_t *pData, int Offset, int Len)
 {
+#if defined(BLYST_NANO_IBK)
 	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);
+#elif defined(BLUEIO832MINI_BOARD)
+	IOPinToggle(LED1_PORT, LED1_PIN);
+#endif
+
 	g_Uart.printf("UART Config Characteristic: Callback received %d bytes data\r\n", Len);
 	//g_Uart.printf("UART Config callback received data: ");
 	//g_Uart.Tx(pData, Len);
@@ -139,7 +152,11 @@ void UartCfgSrvcCallback(BLESRVC *pBlueIOSvc, uint8_t *pData, int Offset, int Le
 		g_Uart.printf("Invalid configuration format\r\n");
 	}
 
+#if defined(BLYST_NANO_IBK)
 	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);
+#elif defined(BLUEIO832MINI_BOARD)
+	IOPinToggle(LED1_PORT, LED1_PIN);
+#endif
 }
 
 /**@brief Function for handling event
@@ -182,7 +199,11 @@ int nRFUartEvtHandler(UARTDev_t *pDev, UART_EVT EvtId, uint8_t *pBuffer, int Buf
 // TODO: Add timer to UartRxSchedHandler()
 void UartRxSchedHandler(void * p_event_data, uint16_t event_size)
 {
-	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);//LED2_GREEN
+#if defined(BLYST_NANO_IBK)
+	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);
+#elif defined(BLUEIO832MINI_BOARD)
+	IOPinToggle(LED1_PORT, LED1_PIN);
+#endif
 
 	bool flush = false;
 	int l = g_Uart.Rx(&g_UartRxBuff[g_UartRxBuffLen], PACKET_SIZE - g_UartRxBuffLen);
@@ -231,5 +252,9 @@ void UartRxSchedHandler(void * p_event_data, uint16_t event_size)
 		app_sched_event_put(NULL, 0, UartRxSchedHandler);
 	}
 
-	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);//LED2_GREEN
+#if defined(BLYST_NANO_IBK)
+	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);
+#elif defined(BLUEIO832MINI_BOARD)
+	IOPinToggle(LED1_PORT, LED1_PIN);
+#endif
 }

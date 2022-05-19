@@ -50,15 +50,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "nrf_sdh.h"
 
 #include "board.h"
-//#include "coredev/timer.h"
 #include "idelay.h"
 #include "UartBle.h"
 #include "Timers.h"
 #include "LedsButtons.h"
 
-
+#if defined(BLYST_NANO_IBK)
 IOPinCfg_t s_ButPins[] = BUTTON_PIN_MAP;
 static int s_NbButPins = sizeof(s_ButPins) / sizeof(IOPinCfg_t);
+#endif
 
 IOPinCfg_t s_Leds[] = LED_PIN_MAP;
 static int s_NbLeds = sizeof(s_Leds) / sizeof(IOPinCfg_t);
@@ -143,8 +143,8 @@ static const BleSrvcCfg_t s_UartSrvcCfg = {
 	.UuidSvc = BLE_UART_UUID_SERVICE,			// Service UUID
 	.NbChar = s_BleUartNbChar,					// Total number of characteristics for the service
 	.pCharArray = g_UartChars,					// Pointer a an array of characteristic
-	.pLongWrBuff = g_UartLWrBuffer,				// Pointer to user long write buffer
-	.LongWrBuffSize = sizeof(g_UartLWrBuffer),	// long write buffer size
+	.pLongWrBuff = NULL,//g_UartLWrBuffer,				// Pointer to user long write buffer
+	.LongWrBuffSize = 0,//sizeof(g_UartLWrBuffer),	// long write buffer size
 };
 
 BleSrvc_t g_UartBleSrvc;
@@ -284,6 +284,7 @@ void HardwareInit()
 	g_Uart.Init(g_UartCfg);
 	msDelay(100);
 
+#if defined(BLYST_NANO_IBK)
 	// LEDs
 	IOPinCfg(s_Leds, s_NbLeds);
 	IOPinSet(BLUEIO_LED_BLUE_PORT, BLUEIO_LED_BLUE_PIN);//LED1
@@ -295,12 +296,17 @@ void HardwareInit()
 	// Buttons
 	IOPinCfg(s_ButPins, s_NbButPins);
 
+	// Interrupts
+	IOPinEnableInterrupt(0, APP_IRQ_PRIORITY_LOW, s_ButPins[0].PortNo, s_ButPins[0].PinNo, IOPINSENSE_LOW_TRANSITION, ButEvent, NULL);
+
+#elif defined(BLUEIO832_BOARD)
+	IOPinSet(LED1_PORT, LED1_PIN);
+#endif
+
 	// Timer
 	g_Timer2.Init(s_Timer2Cfg);
 	msDelay(100);
 
-	// Interrupts
-	IOPinEnableInterrupt(0, APP_IRQ_PRIORITY_LOW, s_ButPins[0].PortNo, s_ButPins[0].PinNo, IOPINSENSE_LOW_TRANSITION, ButEvent, NULL);
 
 	g_Uart.printf("UART-BLE bridge is on!\r\n");
 
@@ -330,8 +336,14 @@ void BleAppInitUserData()
  */
 int BleIntrfEvtCallback(DevIntrf_t *pDev, DEVINTRF_EVT EvtId, uint8_t *pBuffer, int BufferLen)
 {
-	int cnt = 0;
+#if defined(BLYST_NANO_IBK)
 	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);
+#elif defined(BLUEIO832MINI_BOARD)
+	IOPinToggle(LED1_PORT, LED1_PIN);
+#endif
+
+	int cnt = 0;
+
 	if (EvtId == DEVINTRF_EVT_RX_DATA)
 	{
 		uint8_t BleIntrfBuff[BLEINTRF_PKTSIZE];
@@ -345,7 +357,12 @@ int BleIntrfEvtCallback(DevIntrf_t *pDev, DEVINTRF_EVT EvtId, uint8_t *pBuffer, 
 		cnt += l;
 	}
 	g_Uart.printf("\r\n");
+
+#if defined(BLYST_NANO_IBK)
 	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);
+#elif defined(BLUEIO832MINI_BOARD)
+	IOPinToggle(LED1_PORT, LED1_PIN);
+#endif
 
 	return cnt;
 }

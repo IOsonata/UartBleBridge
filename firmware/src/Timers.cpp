@@ -52,7 +52,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "board.h"
 
 Timer g_Timer2;
-extern volatile uint8_t g_TimeoutCnt;
 
 extern UART g_Uart;
 extern BleIntrf g_BleIntrf;
@@ -94,6 +93,7 @@ void Timer2Handler(TimerDev_t *pTimer, uint32_t Evt)
 	//static uint64_t precnt[4] = {0, };
 	//uint64_t c = TimerGetMilisecond(pTimer);
 
+#if 0
 	/* Trigger #0 */
     if (Evt & TIMER_EVT_TRIGGER(0))
     {
@@ -126,11 +126,16 @@ void Timer2Handler(TimerDev_t *pTimer, uint32_t Evt)
 
 
     }
+#endif
 
     /* Trigger #1 */
     if (Evt & TIMER_EVT_TRIGGER(1))
     {
-    	IOPinToggle(s_Leds[2].PortNo, s_Leds[2].PinNo);//LED2_RED
+#if defined(BLYST_NANO_IBK)
+    	IOPinToggle(s_Leds[1].PortNo, s_Leds[1].PinNo);
+#elif defined(BLUEIO832MINI_BOARD)
+    	IOPinToggle(LED1_PORT, LED1_PIN);
+#endif
     }
 
 }
